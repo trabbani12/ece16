@@ -19,37 +19,27 @@
   modified 8 Sep 2016
   by Colby Newman
 */
-int incomingbyte=0;
+int incomingbyte=0; //global input varaible declaration 
 
 // the setup function runs once when you press reset or power the board
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
-  pinMode(LED_BUILTIN, OUTPUT);
-  Serial.begin(9600);
-  while(!Serial);
-  Serial.print("Welcome, the Board has been reset\n");
-  Serial.print("Input a character to continue\n");
-  
-  
-  
-  
+  pinMode(LED_BUILTIN, OUTPUT); //declaring on-board LED as output 
+  Serial.begin(9600); //establish baud rate 
+  while(!Serial); //wait for Serial Monitor to be ready for use before continuing to program 
+  Serial.print("Welcome, the Board has been reset\n"); //Print welcome message
+  Serial.print("Input a character to continue\n"); //ask for input 
 } 
-
-
 
 // the loop function runs over and over again forever
 void loop() {
-  
-
-  
-  incomingbyte=Serial.read();
-  while(incomingbyte>0){
-  Serial.print("LED is ON\n");
-  digitalWrite(LED_BUILTIN, HIGH);// turn the LED on (HIGH is the voltage level)
-  delay(1000);    // wait for a second
-  Serial.print("LED is OFF\n");
-  digitalWrite(LED_BUILTIN, LOW);// turn the LED off by making the voltage LOW
-  delay(1000); 
+  incomingbyte=Serial.read(); // recieve input 
+  while(incomingbyte>0){ //as long as the input was greater than 0, lights would then begin to blink
+    Serial.print("LED is ON\n"); //print to serial monitor that LED is ON
+    digitalWrite(LED_BUILTIN, HIGH);// turn the LED on (HIGH is the voltage level)
+    delay(1000);    // wait for a second
+    Serial.print("LED is OFF\n"); //print to serial monitor that LED is OFF
+    digitalWrite(LED_BUILTIN, LOW);// turn the LED off by making the voltage LOW
+    delay(1000); // wait for a second
   }
-  // wait for a second
 }

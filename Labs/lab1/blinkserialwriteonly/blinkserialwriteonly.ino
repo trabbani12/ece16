@@ -28,18 +28,14 @@ void setup() {
   Serial.begin(9600); //establish baud rate 
   while(!Serial); //wait for Serial Monitor to be ready for use before continuing to program 
   Serial.print("Welcome, the Board has been reset\n"); //Print welcome message 
-  Serial.print("Input a character to continue\n"); //ask for input 
 } 
 
 // the loop function runs over and over again forever
 void loop() {
-  incomingbyte=Serial.read(); //receive input
-  while(incomingbyte>0){ //as long as the input was greater than 0, lights would then being to blink
-    Serial.print("LED is ON\n"); //print to serial monitor that LED is ON
-    digitalWrite(LED_BUILTIN, HIGH);// turn the LED on (HIGH is the voltage level)
-    delay(1000);    // wait for a second
-    Serial.print("LED is OFF\n"); //print to serial monitor that LED is OFF
-    digitalWrite(LED_BUILTIN, LOW);// turn the LED off by making the voltage LOW
-    delay(1000); // wait for a second
-  }
+  Serial.print("LED is ON\n"); //print to serial monitor that LED is ON
+  digitalWrite(LED_BUILTIN, HIGH);// turn the LED on (HIGH is the voltage level)
+  delay(1000);    // wait for a second
+  Serial.print("LED is OFF\n"); //print to serial monitor that LED is OFF
+  digitalWrite(LED_BUILTIN, LOW);// turn the LED off by making the voltage LOW
+  delay(1000); // wait for a second
 }
