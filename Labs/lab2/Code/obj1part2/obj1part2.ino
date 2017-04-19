@@ -48,7 +48,7 @@ void loop() {
   Serial.print(input2);
   Serial.print("    ");
   Serial.println(input3);
-  delay(1000);
+  delay((10000-ending));
   }
   }
   
@@ -69,7 +69,7 @@ void loop() {
   Serial.print(gy);
   Serial.print("    ");
   Serial.println(gz);
-  delay(1000);
+  delay((10000-ending));
   }
   }
 
@@ -89,7 +89,7 @@ void loop() {
   Serial.print(gy);
   Serial.print("    ");
   Serial.println(gz);
-  delay(1000);
+  delay((10000-ending));
   }
   
   }
