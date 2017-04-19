@@ -28,8 +28,10 @@ Serial.println("Make a selection");
 }
 
 void loop() {
+  
   user=Serial.read();
   if (user=='1') {
+  while(1) {
   Serial.print(counter++);
   starting=micros();
   input1=analogRead(A0);
@@ -45,14 +47,15 @@ void loop() {
   Serial.print("    ");
   Serial.print(input2);
   Serial.print("    ");
-  Serial.print(input3);
-  
-  
+  Serial.println(input3);
+  delay(1000);
+  }
   }
   
   
   
   if (user=='2') {
+  while(1) {
   Serial.print(counter++);
   int gx, gy, gz;
   starting=micros();
@@ -65,18 +68,29 @@ void loop() {
   Serial.print("    ");
   Serial.print(gy);
   Serial.print("    ");
-  Serial.print(gz);
-  
+  Serial.println(gz);
+  delay(1000);
+  }
   }
 
 
   if (user=='3') {
+  while(1) {
+  Serial.print(counter++);
   int gx, gy, gz;
   starting=micros();
   CurieIMU.readAccelerometer(gx, gy, gz);
   ending=micros()-starting;
-  Serial.print("Accelerometer: ");
-  Serial.println(ending);  
+  Serial.print("    ");
+  Serial.print(ending);
+  Serial.print("    ");
+  Serial.print(gx);
+  Serial.print("    ");
+  Serial.print(gy);
+  Serial.print("    ");
+  Serial.println(gz);
+  delay(1000);
+  }
   
   }
   
