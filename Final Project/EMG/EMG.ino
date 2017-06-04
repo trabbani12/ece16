@@ -1,6 +1,7 @@
 #include "CurieTimerOne.h"
 
 unsigned long SAMPLERATE = 5000; //10000 100Hz
+
 float analogReadVal;
 unsigned long sampleTime;
 int shootPress;
@@ -22,14 +23,12 @@ void setup() {
 }
 
 void loop() {
-  
   shootEMG();
   Serial.print(output); // serial print box car output
   Serial.print("\t"); // Tab seperated
   Serial.print(average); // serial print box car output
   Serial.print("\t"); // Tab seperated
   Serial.println(shootPress); // serial print box car output
-  //shootPress = 0;
 }
 
 void shootEMG(){
