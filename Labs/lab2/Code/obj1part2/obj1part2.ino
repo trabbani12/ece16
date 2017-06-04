@@ -23,8 +23,12 @@ CurieIMU.begin();
 CurieIMU.setGyroRange(250);
 CurieIMU.setAccelerometerRange(2);
 
-Serial.println("Make a selection");
-
+Serial.println("Please make a selection");
+/*
+Serial.println("Analog:         Press 1");
+Serial.println("Gyroscope:      Press 2");
+Serial.println("Accelerometer:  Press 3");
+*/
 }
 
 void loop() {
@@ -37,9 +41,8 @@ void loop() {
   input1=analogRead(A0);
   input2=analogRead(A1);
   input3=analogRead(A2);
+  delayMicroseconds(500);
   ending=micros()-starting;
-//  Serial.print("Analog: ");
-//  Serial.println(ending);
   Serial.print("    ");
   Serial.print(ending);
   Serial.print("    ");
@@ -48,7 +51,6 @@ void loop() {
   Serial.print(input2);
   Serial.print("    ");
   Serial.println(input3);
-  delay((10000-ending));
   }
   }
   
@@ -60,6 +62,7 @@ void loop() {
   int gx, gy, gz;
   starting=micros();
   CurieIMU.readGyro(gx, gy, gz);
+  delayMicroseconds(9920);
   ending=micros()-starting;
   Serial.print("    ");
   Serial.print(ending);
@@ -69,7 +72,7 @@ void loop() {
   Serial.print(gy);
   Serial.print("    ");
   Serial.println(gz);
-  delay((10000-ending));
+
   }
   }
 
@@ -80,6 +83,7 @@ void loop() {
   int gx, gy, gz;
   starting=micros();
   CurieIMU.readAccelerometer(gx, gy, gz);
+  delayMicroseconds(9920);
   ending=micros()-starting;
   Serial.print("    ");
   Serial.print(ending);
@@ -89,12 +93,12 @@ void loop() {
   Serial.print(gy);
   Serial.print("    ");
   Serial.println(gz);
-  delay((10000-ending));
+
   }
   
   }
   
-  delay(1000);
+
   
 
 }

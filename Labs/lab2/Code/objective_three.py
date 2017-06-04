@@ -2,7 +2,7 @@ import os
 import serial   #import serial library
 import re #used for spliting white spaces
 
-ser = serial.Serial("/dev/cu.usbmodem1411", 115200) # create serial object
+ser = serial.Serial("/dev/cu.usbmodem1421", 115200) # create serial object
                                             # pointing to arduino connection
 
 print ("*For all decisions, enter the number associated with the choice you would like to make*")
@@ -36,14 +36,18 @@ print ser.readline()
 ser.write(decision)
 ser.readline()
 word = [0,0,0,0,0]
-while(1):
-    s = ser.readline()
+
+counter=0;
+while(int(word[0])<5000):
+    self.s = ser.readline()
+    #counter=counter++
     words = s.split()
-    print type(words)
-    print len(words)
-    print words
-    print s
+    #print type(words)
+    #print len(words)
+    #print words
+    #print s
     if(int(decision) == 1): #analog converstion
+        word[0]=words[0]
         a = float(words[1])
         b = a/1000.0
         word[1] = b
@@ -61,7 +65,9 @@ while(1):
         word[4] = c
         print word
         f.write(str(word[0]) + "\t" + str(word[1]) + "\t" + str(word[2]) + "\t" + str(word[3]) + "\t" + str(word[4]) + "\n")
+
     if(int(decision) == 3): #Accelerometer converstion
+        word[0]=words[0]
         a = float(words[1])
         b = a/1000.0
         word[1] = b
@@ -79,7 +85,9 @@ while(1):
         word[4] = c
         print word
         f.write(str(word[0]) + "\t" + str(word[1]) + "\t" + str(word[2]) + "\t" + str(word[3]) + "\t" + str(word[4]) + "\n")
+
     if(int(decision) == 2): #Gyroscope converstion
+        word[0]=words[0]
         a = float(words[1])
         b = a/1000.0
         word[1] = b
@@ -97,5 +105,6 @@ while(1):
         word[4] = c
         print word
         f.write(str(word[0]) + "\t" + str(word[1]) + "\t" + str(word[2]) + "\t" + str(word[3]) + "\t" + str(word[4]) + "\n")
+
 ser.close()
 f.close()

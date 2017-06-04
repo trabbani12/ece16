@@ -3,18 +3,20 @@
 
 unsigned long starting=0;
 unsigned long ending=0;
+unsigned long temp=0;
 int input1, input2, input3, counter=1;
 int time1=10000;
 char user = '0';
 
+
 //#define SERIAL_PORT_LOG_ENABLE 1
 
-void timedBlinkIsr1()   // callback function when interrupt is asserted
+void timedAnalog()   // callback function when interrupt is asserted
 {
   
   Serial.print(counter++);
   
-  starting=micros();
+ // starting=micros();
   input1=analogRead(A0);
   input2=analogRead(A1);
   input3=analogRead(A2);
@@ -29,18 +31,20 @@ void timedBlinkIsr1()   // callback function when interrupt is asserted
   Serial.print(input2);
   Serial.print("    ");
   Serial.println(input3);
+  starting=micros();
   
   
   }
   
 
-void timedBlinkIsr2()   // callback function when interrupt is asserted
+void timedGyro()   // callback function when interrupt is asserted
 {
   Serial.print(counter++);
   int gx, gy, gz;
-  starting=micros();
+//  starting=micros();
   CurieIMU.readGyro(gx, gy, gz);
   ending=micros()-starting;
+  //temp=ending;
   Serial.print("    ");
   Serial.print(ending);
   Serial.print("    ");
@@ -49,18 +53,18 @@ void timedBlinkIsr2()   // callback function when interrupt is asserted
   Serial.print(gy);
   Serial.print("    ");
   Serial.println(gz);
-  
-  
+  starting=micros();
+   
   }
 
 
-void timedBlinkIsr3()   // callback function when interrupt is asserted
+void timedAcc()   // callback function when interrupt is asserted
 {
 
 
   Serial.print(counter++);
   int gx, gy, gz;
-  starting=micros();
+  //starting=micros();
   CurieIMU.readAccelerometer(gx, gy, gz);
   ending=micros()-starting;
   Serial.print("    ");
@@ -71,6 +75,7 @@ void timedBlinkIsr3()   // callback function when interrupt is asserted
   Serial.print(gy);
   Serial.print("    ");
   Serial.println(gz);
+  starting=micros();
   }
   
   
@@ -98,15 +103,18 @@ while(Serial.available()==0)
 user = Serial.read();
 Serial.println(user);
 if(user=='1'){
-CurieTimerOne.start(time1, &timedBlinkIsr1);
+CurieTimerOne.start(time1, &timedAnalog);
+starting=micros();
 }
 
 if(user=='2'){
-CurieTimerOne.start(time1, &timedBlinkIsr2);
+CurieTimerOne.start(time1, &timedGyro);
+starting=micros();
 }
 
 if(user=='3'){
-CurieTimerOne.start(time1, &timedBlinkIsr3);
+CurieTimerOne.start(time1, &timedAcc);
+starting=micros();
 }
 }
 

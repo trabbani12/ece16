@@ -33,7 +33,8 @@ void loop() {
   input=analogRead(A2);
   ending=micros()-starting;
   Serial.print("Analog: ");
-  Serial.println(ending);
+  Serial.print(ending);
+  Serial.println("us");
 
   float gx, gy, gz;
   
@@ -42,14 +43,16 @@ void loop() {
   CurieIMU.readGyroScaled(gx, gy, gz);
   ending=micros()-starting;
   Serial.print("Gyro: ");
-  Serial.println(ending);
+  Serial.print(ending);
+  Serial.println("us");
 
 
   starting=micros();
   CurieIMU.readAccelerometerScaled(gx, gy, gz);
   ending=micros()-starting;
   Serial.print("Accelerometer: ");
-  Serial.println(ending);  
+  Serial.print(ending);  
+  Serial.println("us");
   
 
   delay(1000);
