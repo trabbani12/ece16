@@ -31,28 +31,27 @@ void setup() {
 }
 
 float CompFilter(float gyroInput, float AccInput){
-    
+  //Complementary Filter, takes a portion of GyroScope Data and Accelerometer Data
+  //To Compensate the Drift error by the Gyroscope, caused by integration.
   float filtered_value = 0.70*gyroInput + 0.3*AccInput;
-
-
   return filtered_value;
 }
 
 float DegreesPerSecond(int rawValue){
+ //Convert Raw Value from Gyro to DegreesPerSecond
   float DPS = ( rawValue/32768.9)*GyroRange;
-
   return DPS;
 }
 
 
 float toms2(int acc){
+//Accelerometer Raw Data converted to meters/sec^2    
     float AccConverted = (acc/32768000.0)*AccRange*9.8; 
-
     return AccConverted;
 }
 
 
-void positionFunction() {
+void positionFunction() {//Used all the above functions to map the Angle of the board to a position in game
   CurieIMU.readAccelerometer(x, y,z);
   CurieIMU.readGyro(gyrox, gyroy, gyroz);
 //converts gyro values to degrees per second
