@@ -42,13 +42,13 @@ void shootEMG(){
   
   if(output >= average && shootState == 0){
     shootCounter += 1;
-    if(shootCounter >= 50){ // TUNING PARAMETER
+    if(shootCounter >= 80){ // TUNING PARAMETER
       shootCounter = 0;
       shootPress = 1;
       shootState = 1;
     }}
   else if(output < average && shootState == 0 && shootCounter >= 0){
-    shootCounter -= 1;}
+    shootCounter -= 5;}
   else if(shootState == 1){
     shootState = 0;
     shootPress = 0;}
@@ -106,7 +106,7 @@ static float average = 0;// the average
   readIndex = readIndex + 1; // advance to the next position in the array
   if (readIndex >= boxcarWidth) {// if we're at the end of the array...
     readIndex = 0;} // ...wrap around to the beginning
-  average = total / boxcarWidth + 0.02; // calculate the average  //TUNING PARAMETER
+  average = total / boxcarWidth + 0.03; // calculate the average  //TUNING PARAMETER
   return average;} // send it to the computer as ASCII digits
 
 float boxcarFilterSampleShort(float sample) {
