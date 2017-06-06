@@ -36,7 +36,7 @@ void setup() {
 float CompFilter(float gyroInput, float AccInput){
   //Complementary Filter, takes a portion of GyroScope Data and Accelerometer Data
   //To Compensate the Drift error by the Gyroscope, caused by integration.
-  float filtered_value = 0.50*gyroInput + 0.50*AccInput;
+  float filtered_value = 0.95*gyroInput + 0.05*AccInput;
   return filtered_value;
 }
 
@@ -82,10 +82,10 @@ void positionFunction() {//Used all the above functions to map the Angle of the 
   
   //Complementery Filter is applied
   float final_roll = CompFilter(pitchgyro,roll);
-  float final_pitch = CompFilter(rollgyro,pitch);
-  float final_yaw = CompFilter(yawgyro,yaw);
+  //float final_pitch = CompFilter(rollgyro,pitch);
+  //float final_yaw = CompFilter(yawgyro,yaw);
 
-  if (abs(final_roll)>abs(final_pitch) & abs(final_roll)>abs(final_yaw)) {
+ 
     if (final_roll<0) {
       int fposition=(abs(final_roll)/GyroRange)*375;
       Serial.println(fposition+370);
@@ -96,32 +96,8 @@ void positionFunction() {//Used all the above functions to map the Angle of the 
       Serial.println(370-fposition);
       delay(100);
     }
-  }
-   else if (abs(final_pitch)>abs(final_roll) & abs(final_pitch)>abs(final_yaw)) {
-    if (final_pitch<0) {
-      int fposition=(abs(final_pitch)/GyroRange)*375;
-      Serial.println(fposition+370);
-      delay(100);
-    }
-    else{
-      int fposition=(final_pitch/GyroRange)*375;
-      Serial.println(370-fposition);
-      delay(100);
-    }
-  }
-   else if (abs(final_yaw)>abs(final_pitch) & abs(final_yaw)>abs(final_roll)) {
-    if (final_yaw<0) {
-      int fposition=(abs(final_yaw)/GyroRange)*375;
-      Serial.println(fposition+370);
-      delay(100);
-    }
-    else{
-      int fposition=(final_yaw/GyroRange)*375;
-      Serial.println(370-fposition);
-      delay(100);
-    }
-  }
-
+  
+   
 }
 
 
