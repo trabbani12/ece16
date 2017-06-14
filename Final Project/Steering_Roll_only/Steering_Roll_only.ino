@@ -89,12 +89,12 @@ void positionFunction() {//Used all the above functions to map the Angle of the 
     if (final_roll<0) {
       int fposition=(abs(final_roll)/GyroRange)*375;
       Serial.println(fposition+370);
-      delay(100);
+      //delay(100);
     }
     else{
       int fposition=(final_roll/GyroRange)*375;
       Serial.println(370-fposition);
-      delay(100);
+      //delay(100);
     }
   
    
@@ -104,7 +104,7 @@ void positionFunction() {//Used all the above functions to map the Angle of the 
 void loop() {
 
   positionFunction();
-  Serial.println(shoot);
+  //Serial.println(shoot);
   delay(50);
   
 }
