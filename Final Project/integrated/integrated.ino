@@ -49,17 +49,18 @@ void loop() {
   int nextPosition = positionFunction();
   //int shoot = shootEMG();
 
-  /*
+  
   if ((millis() - commandTimer > commandDelay) && nextState == 0){
-    Serial.println(nextPosition);
-    nextState = 1;
+    //int nextPosition = positionFunction();
+    Serial.println(runningAverage(nextPosition));
     commandTimer = millis();
+    nextState = 1;
   }
   if ((millis() - commandTimer > commandDelay) && nextState == 1){
     //Serial.println(shoot);
     nextState = 0;
     commandTimer = millis();
-  }*/
+  }
 }
 
 void analogDataRead(){
@@ -83,10 +84,12 @@ float toms2(int acc){
 
 
 int positionFunction() {//Used all the above functions to map the Angle of the board to a position in game
+  float final_roll;
+  
   static float maxRoll = 2000;
   static float minRoll = -2000;
 //converts gyro values to degrees per second
-  float gdx = DegreesPerSecond(gyrox);
+  int gdx = DegreesPerSecond(gyrox);
   
 //converts accelerometer values to m/s^2
   float accelerationX = toms2(x);
@@ -102,23 +105,24 @@ int positionFunction() {//Used all the above functions to map the Angle of the b
   
   
   //angular velocity is integrated over time to obtain pitch, roll and yaw from the Gyroscope Readings
-  pitchgyro +=(gdx)*dt; 
+  pitchgyro +=(float(gdx))*dt; 
 
-  if (accelerationZ > 0.9) pitchgyro = dynamicComp(pitchgyro,roll*25, accelerationZ/2);
-  Serial.print(pitchgyro);
-  Serial.print('\t');
-  Serial.print(roll*25);
-  Serial.print('\t');
+  //Complementery Filter is applied
+  pitchgyro = dynamicComp(pitchgyro,roll*25, accelerationZ/2);
+  //Serial.print(pitchgyro);
+  //Serial.print('\t');
+  //Serial.print(roll*25);
+  //Serial.print('\t');
   
   //Complementery Filter is applied
-  float final_roll = CompFilter(pitchgyro,roll*25);
+  //final_roll = CompFilter(pitchgyro,roll*25);
+  final_roll = pitchgyro;
 
-  
   if (pitchgyro > maxRoll) pitchgyro = maxRoll;
   else if (pitchgyro < minRoll) pitchgyro = minRoll;
   
-  final_roll = (final_roll - (minRoll))*(745-5)/(maxRoll - (minRoll)) + 5;  // Scale
-  Serial.println(final_roll);
+  final_roll = (pitchgyro - (minRoll))*(745-5)/(maxRoll - (minRoll)) + 5;  // Scale
+  //Serial.println(final_roll);
   return final_roll;
 }
 
@@ -127,6 +131,41 @@ float dynamicComp(float gyroInput, float AccInput, float Alpha){
   //To Compensate the Drift error by the Gyroscope, caused by integration.
   float filtered_value = (1-Alpha)*gyroInput + Alpha*AccInput;
   return filtered_value;
+  //return runningAverage(filtered_value);
+}
+
+long runningAverageLong(int M) {
+  #define LM_SIZE 30
+  static int LM[LM_SIZE];      // LastMeasurements
+  static byte index = 0;
+  static long sum = 0;
+  static byte count = 0;
+
+  // keep sum updated to improve speed.
+  sum -= LM[index];
+  LM[index] = M;
+  sum += LM[index];
+  index++;
+  index = index % LM_SIZE;
+  if (count < LM_SIZE) count++;
+  return sum / count;
+}
+
+long runningAverage(int M) {
+  #define LM_SIZE 20
+  static int LM[LM_SIZE];      // LastMeasurements
+  static byte index = 0;
+  static long sum = 0;
+  static byte count = 0;
+
+  // keep sum updated to improve speed.
+  sum -= LM[index];
+  LM[index] = M;
+  sum += LM[index];
+  index++;
+  index = index % LM_SIZE;
+  if (count < LM_SIZE) count++;
+  return sum / count;
 }
 
 float CompFilter(float gyroInput, float AccInput){
