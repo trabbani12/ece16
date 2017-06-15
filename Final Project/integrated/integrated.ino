@@ -1,80 +1,75 @@
 #include "CurieIMU.h"
 #include "CurieTimerOne.h"
 
-unsigned long SAMPLERATE = 10000; //10000 100Hz, 500 2000Hz
+unsigned long SAMPLERATE = 5000; //10000 100Hz, 500 2000Hz, 1250 for pos
 
 const float pi = 3.14159;
-const float GyroRange=2000; //Gyro Range
+const float GyroRange=1000; //Gyro Range
 
 const int AccRange=2; //Accelerometer Range
 
-int shoot=1;//Shoot Command
-int gyrox,gyroy,gyroz; //Raw data to read the gyro data into
 float dt=0.15;
-float pitchgyro=0;
+int pitchgyro=0;
 float rollgyro=0;
 float yawgyro=0;
-int x,y,z;
-// previous orientation (for comparison)
+int final_roll;
+int nextPosition;
+int shoot;
+
+int gyrox,gyroy,gyroz; //Raw data to read the gyro data into
+int accelx,accely,accelz; // previous orientation (for comparison)
 
 float analogReadVal;
 unsigned long sampleTime;
-int shootPress;
+
+
 unsigned long commandTimer = millis();
 
 void setup() {
-  
   Serial.begin(115200); // initialize Serial communication
   while (!Serial);    // wait for the serial port to open
   
   CurieIMU.begin();// initialize device
-
-  // Set the accelerometer range to 2G
-  CurieIMU.setAccelerometerRange(AccRange);
+  CurieIMU.setAccelerometerRange(AccRange);// Set the accelerometer range to 2G
   CurieIMU.setGyroRange(GyroRange);
-  CurieIMU.setGyroRate(200);
+  CurieIMU.setGyroRate(800);
   CurieIMU.autoCalibrateGyroOffset();
   CurieIMU.autoCalibrateAccelerometerOffset(X_AXIS, 0);
   CurieIMU.autoCalibrateAccelerometerOffset(Y_AXIS, 0);
   CurieIMU.autoCalibrateAccelerometerOffset(Z_AXIS, 1);
 
-  CurieTimerOne.start(SAMPLERATE, &analogDataRead);
-  CurieTimerOne.attachInterrupt(&imuDataRead);
-  delay(1000);
+  CurieTimerOne.start(SAMPLERATE, &sampleProcess);
 }
 
 int nextState = 0;
 void loop() {
-  const int commandDelay = 10; // Delay between serial outputs
-  int nextPosition = positionFunction();
-  //int shoot = shootEMG();
+  const int commandDelay = 25; // Delay between serial outputs
+  int lastPosition;
+  int fireYes = 1;
 
+
+  if(abs(nextPosition-lastPosition) > 60){
+    while(millis() - commandTimer <= commandDelay);
+    Serial.println(nextPosition);
+    lastPosition = nextPosition;
+    commandTimer = millis();
+  }
+
+  if(shoot) Serial.println(fireYes);
   
-  if ((millis() - commandTimer > commandDelay) && nextState == 0){
-    //int nextPosition = positionFunction();
-    Serial.println(runningAverage(nextPosition));
-    commandTimer = millis();
-    nextState = 1;
-  }
-  if ((millis() - commandTimer > commandDelay) && nextState == 1){
-    //Serial.println(shoot);
-    nextState = 0;
-    commandTimer = millis();
-  }
 }
 
-void analogDataRead(){
-  analogReadVal = analogRead(0);
-}
-
-void imuDataRead(){
-  CurieIMU.readAccelerometer(x,y,z);
+void sampleProcess(){
+  CurieIMU.readAccelerometer(accelx,accely,accelz);
   CurieIMU.readGyro(gyrox, gyroy, gyroz);
+  nextPosition = positionFunction();
+  analogReadVal = analogRead(0);
+  shoot = shootEMG();
 }
 
-float DegreesPerSecond(int rawValue){
+int DegreesPerSecond(int rawValue){
  //Convert Raw Value from Gyro to DegreesPerSecond
-  float DPS = ( rawValue/32768.9)*GyroRange;
+  int DPS = (rawValue/32768.9)*GyroRange;
   return DPS;}
 
 float toms2(int acc){
@@ -82,124 +77,63 @@ float toms2(int acc){
     float AccConverted = (acc/32768.0)*AccRange; 
     return AccConverted;}
 
-
 int positionFunction() {//Used all the above functions to map the Angle of the board to a position in game
-  float final_roll;
+  const static int maxRoll = 1000;
+  const static int minRoll = -1000;
+
+  static unsigned long gyroLastSampleTime = micros();
+  unsigned long gyroSampleTime = micros();
   
-  static float maxRoll = 2000;
-  static float minRoll = -2000;
-//converts gyro values to degrees per second
+  
+  //converts gyro values to degrees per second and scale down
   int gdx = DegreesPerSecond(gyrox);
-  
-//converts accelerometer values to m/s^2
-  float accelerationX = toms2(x);
-  float accelerationY = toms2(y);
-  float accelerationZ = toms2(z);
-
-//pitch, roll and yaw are obtained from the Accelerometer Readings
-  float roll = 180 * atan (accelerationY/sqrt(accelerationX*accelerationX + accelerationZ*accelerationZ))/pi;
-
-  
-  //pitchgyro *= 0.9; //decay
-  gdx /=4; // Scale it down
-  
-  
+  //Serial.println((float(gyroSampleTime-gyroLastSampleTime))/100000);
   //angular velocity is integrated over time to obtain pitch, roll and yaw from the Gyroscope Readings
-  pitchgyro +=(float(gdx))*dt; 
-
-  //Complementery Filter is applied
-  pitchgyro = dynamicComp(pitchgyro,roll*25, accelerationZ/2);
-  //Serial.print(pitchgyro);
-  //Serial.print('\t');
-  //Serial.print(roll*25);
-  //Serial.print('\t');
+  pitchgyro +=gdx*((float(gyroSampleTime-gyroLastSampleTime))/100000)*4;
+  gyroLastSampleTime = gyroSampleTime;
+  
+  //pitch, roll and yaw are obtained from the Accelerometer Readings
+  float roll = 30 * 180 * atan (float(accely)/sqrt(float(accelx)*float(accelx) + float(accelz)*float(accelz)))/pi;
+  
+  //converts accelerometer values to m/s^2
+  float accelerationZ = toms2(accelz);
   
   //Complementery Filter is applied
-  //final_roll = CompFilter(pitchgyro,roll*25);
-  final_roll = pitchgyro;
-
+  if(accelerationZ >= 0.0 && accelerationZ <= 1.0) pitchgyro = dynamicComp(pitchgyro,roll, pow(accelerationZ/(1.6),6));
+ 
   if (pitchgyro > maxRoll) pitchgyro = maxRoll;
   else if (pitchgyro < minRoll) pitchgyro = minRoll;
-  
   final_roll = (pitchgyro - (minRoll))*(745-5)/(maxRoll - (minRoll)) + 5;  // Scale
-  //Serial.println(final_roll);
   return final_roll;
+  
 }
 
-float dynamicComp(float gyroInput, float AccInput, float Alpha){
-  //Complementary Filter, takes a portion of GyroScope Data and Accelerometer Data
-  //To Compensate the Drift error by the Gyroscope, caused by integration.
+//Complementary Filter, takes a portion of GyroScope Data and Accelerometer Data
+//To Compensate the Drift error by the Gyroscope, caused by integration.
+float dynamicComp(float gyroInput, float AccInput, float Alpha){  
   float filtered_value = (1-Alpha)*gyroInput + Alpha*AccInput;
-  return filtered_value;
-  //return runningAverage(filtered_value);
-}
-
-long runningAverageLong(int M) {
-  #define LM_SIZE 30
-  static int LM[LM_SIZE];      // LastMeasurements
-  static byte index = 0;
-  static long sum = 0;
-  static byte count = 0;
-
-  // keep sum updated to improve speed.
-  sum -= LM[index];
-  LM[index] = M;
-  sum += LM[index];
-  index++;
-  index = index % LM_SIZE;
-  if (count < LM_SIZE) count++;
-  return sum / count;
-}
-
-long runningAverage(int M) {
-  #define LM_SIZE 20
-  static int LM[LM_SIZE];      // LastMeasurements
-  static byte index = 0;
-  static long sum = 0;
-  static byte count = 0;
-
-  // keep sum updated to improve speed.
-  sum -= LM[index];
-  LM[index] = M;
-  sum += LM[index];
-  index++;
-  index = index % LM_SIZE;
-  if (count < LM_SIZE) count++;
-  return sum / count;
-}
-
-float CompFilter(float gyroInput, float AccInput){
-  //Complementary Filter, takes a portion of GyroScope Data and Accelerometer Data
-  //To Compensate the Drift error by the Gyroscope, caused by integration.
-  float filtered_value = 0.8*gyroInput + 0.2*AccInput;
-  //float filtered_value = 0.95*gyroInput;  
   return filtered_value;
 }
 
 int shootEMG(){
+  int shootPress;
   static int shootCounter = 0;
   static int shootState = 0;
-  
-  float hpFiltered = thirdOrder_HighPass(analogReadVal*(3.30)/1024.00); //Scale EMG to Volts and Apply Highpass Filter
+  static float maxEMG = 50;
+  float hpFiltered = thirdOrder_HighPass(analogReadVal); //Scale EMG to Volts and Apply Highpass Filter
   float bpFiltered = thirdOrder_LowPass(hpFiltered);  // Apply Low Pass Filter
-  float output = boxcarFilterSample(abs(bpFiltered)); // Apply Box Car Filter w/ Recitify Output
-  float average = boxcarFilterSample(output); // Apply Box Car Filter w/ Recitify Output
-  
-  if(output >= average && shootState == 0){
-    shootCounter += 1;
-    if(shootCounter >= 80){ // TUNING PARAMETER
-      shootCounter = 0;
-      shootPress = 1;
-      shootState = 1;
-      return shootPress;
-    }}
-  else if(output < average && shootState == 0 && shootCounter >= 0){
-    shootCounter -= 5;}
-  else if(shootState == 1){
-    shootState = 0;
-    shootPress = 0;
-    return shootPress;
+  float emgOutput = boxcarFilterSample(abs(bpFiltered)); // Apply Box Car Filter w/ Recitify Output
+ 
+  if (emgOutput > maxEMG) {
+    maxEMG = maxEMG+emgOutput/2;
   }
+  else maxEMG *= 0.9995;
+  if(emgOutput >= 0.55*maxEMG){
+    shootPress = 1;
+  }
+  
+  else if (emgOutput < 0.35*maxEMG && (shootPress == 1))shootPress = 0;
+  return shootPress;
 }
 
 float thirdOrder_HighPass(float sample) {
@@ -243,7 +177,7 @@ float thirdOrder_LowPass(float sample) {
   return y[0];}
 
 float boxcarFilterSample(float sample) {
-  static const int boxcarWidth = 100; // Change this value to alter boxcar length 
+  static const int boxcarWidth = 16; // Change this value to alter boxcar length 
   static float recentSamples[boxcarWidth] = {0}; // hold onto recent samples
   static int readIndex = 0;// the index of the current reading
   static float total = 0;// the running total
@@ -253,9 +187,7 @@ float boxcarFilterSample(float sample) {
   total = total + recentSamples[readIndex]; // add the reading to the total
   readIndex = readIndex + 1; // advance to the next position in the array
   if (readIndex >= boxcarWidth) {// if we're at the end of the array...
-    readIndex = 0;
-  } // ...wrap around to the beginning
-  average = total / boxcarWidth + 0.03; // calculate the average  //TUNING PARAMETER
-  return average;
-} // send it to the computer as ASCII digits
+    readIndex = 0;} // ...wrap around to the beginning
+  average = total / boxcarWidth; // calculate the average
+  return average;} // send it to the computer as ASCII digits
 
