@@ -47,7 +47,7 @@ void loop() {
   int lastPosition;
   int fireYes = 1;
 
-/*
+
   if(abs(nextPosition-lastPosition) > 60){
     while(millis() - commandTimer <= commandDelay);
     Serial.println(nextPosition);
@@ -56,7 +56,7 @@ void loop() {
   }
 
   if(shoot) Serial.println(fireYes);
-  */
+  
 }
 
 void sampleProcess(){
