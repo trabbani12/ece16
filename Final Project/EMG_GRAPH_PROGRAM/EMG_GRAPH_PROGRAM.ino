@@ -139,6 +139,7 @@ int shootEMG(){
   Serial.print(maxEMG);
   Serial.print('\t');
   Serial.println(shootPress);
+  
   return shootPress;
 }
 

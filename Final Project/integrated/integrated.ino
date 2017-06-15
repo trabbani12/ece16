@@ -99,7 +99,7 @@ int positionFunction() {//Used all the above functions to map the Angle of the b
   float accelerationZ = toms2(accelz);
   
   //Complementery Filter is applied
-  if(accelerationZ >= 0.0 && accelerationZ <= 1.0) pitchgyro = dynamicComp(pitchgyro,roll, pow(accelerationZ/(1.6),6));
+  if(accelerationZ >= 0.0 && accelerationZ <= 1.0) pitchgyro = dynamicComp(pitchgyro, roll, accelerationZ);
  
   if (pitchgyro > maxRoll) pitchgyro = maxRoll;
   else if (pitchgyro < minRoll) pitchgyro = minRoll;
@@ -110,8 +110,9 @@ int positionFunction() {//Used all the above functions to map the Angle of the b
 
 //Complementary Filter, takes a portion of GyroScope Data and Accelerometer Data
 //To Compensate the Drift error by the Gyroscope, caused by integration.
-float dynamicComp(float gyroInput, float AccInput, float Alpha){  
-  float filtered_value = (1-Alpha)*gyroInput + Alpha*AccInput;
+float dynamicComp(float gyroInput, float AccInput, float Alpha){
+  float scaledAlpha = pow(Alpha/(1.6),6)
+  float filtered_value = (1-scaledAlpha)*gyroInput + scaledAlpha*AccInput;
   return filtered_value;
 }
 
