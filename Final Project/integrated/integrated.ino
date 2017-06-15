@@ -127,7 +127,7 @@ int shootEMG(){
   if (emgOutput > maxEMG) {
     maxEMG = maxEMG+emgOutput/2;
   }
-  else maxEMG *= 0.9995;
+  else if (maxEMG > 50) maxEMG *= 0.9999;
   if(emgOutput >= 0.55*maxEMG){
     shootPress = 1;
   }
